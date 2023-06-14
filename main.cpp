@@ -94,7 +94,7 @@ vector<string> findRecordsByDisease(string filename, string disease) {
     string line;
 
     while(getline(infile, line)) {
-        while (line.find(disease) != string::npos) {
+        if (line.find(disease) != string::npos) {
             recordResults.push_back(line.substr(0, line.find(",")));
         }
     }
@@ -102,24 +102,25 @@ vector<string> findRecordsByDisease(string filename, string disease) {
     return recordResults;
 }
 
-int countNumberOfDiseaseCases(string filename, string disease, string location = "") {
+int countNumberOfDiseaseCases(string filename, string disease, string location) {
     int cases = 0;
     string line;
     ifstream infile;
     infile.open(filename);
 
     while (getline(infile, line)) {
-        while (
+        if (
             line.find(disease) != string::npos && 
-            (location.empty() ? true : line.find(location) != string::npos
-        )) {
+            (location.empty() ? true : line.find(location) != string::npos)
+        ) {
             size_t pos = 0;
             while ((pos = line.find(",")) != string::npos) {
-                line.erase(0, line.find(","));
+                line.erase(0, pos + 1);
             }
             cases += stoi(line);
         }
     }
+    infile.close();
     return cases;
 }
 
@@ -183,12 +184,12 @@ int helpMenu() {
             }
             addDataToFile("cases.csv", record);
             cout << "Record " << changeStringCase(splitCommands.at(1)) 
-                << splitCommands.at(2) 
-                << splitCommands.at(3) << endl;
+                << " " << splitCommands.at(2) 
+                << " " << splitCommands.at(3) << endl;
         } else if (splitCommands.at(0).compare("list") == 0) {
             if (splitCommands.at(1).compare("locations") == 0) {
                 readDataFromFile("locations.csv");
-            } else if (splitCommands.at(1).compare("disease") == 0) {
+            } else if (splitCommands.at(1).compare("diseases") == 0) {
                 readDataFromFile("cases.csv", true);
             }
         } else if (splitCommands.at(0).compare("where") == 0) {
@@ -203,13 +204,13 @@ int helpMenu() {
             if (splitCommands.size() == 2) {
                 cout << "Total cases of '" << changeStringCase(splitCommands.at(1)) 
                     << "' = " 
-                    << countNumberOfDiseaseCases("cases.csv", changeStringCase(splitCommands.at(1)));
+                    << countNumberOfDiseaseCases("cases.csv", changeStringCase(splitCommands.at(1)), "") << endl;
             } else if (splitCommands.size() == 3) {
                 cout << "Cases of " << changeStringCase(splitCommands.at(2)) 
                     << " at " << changeStringCase(splitCommands.at(1)) << " are: " 
                     << countNumberOfDiseaseCases(
-                        "cases.csv", changeStringCase(splitCommands.at(1)), changeStringCase(splitCommands.at(2))
-                    );
+                        "cases.csv", changeStringCase(splitCommands.at(2)), changeStringCase(splitCommands.at(1))
+                    ) << endl;
             }
         } else if (splitCommands.at(0).compare("help") == 0) {
             cout << "================================================================================"<<endl;
@@ -228,7 +229,7 @@ int helpMenu() {
             cout << "================================================================================"<<endl;
         } else if (splitCommands.at(0).compare("exit") == 0){
             return 0;
-        } else{
+        } else {
             cout << "Invalid command !"<<endl;
         }
 
